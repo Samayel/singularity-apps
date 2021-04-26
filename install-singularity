@@ -2,5 +2,5 @@
 
 set -e
 
-mkdir /opt
+mkdir -p /opt
 curl -sSL https://fs.quyo.net/singularity/singularity-3.7.3-bin.tar.xz | tar -C /opt -xf
