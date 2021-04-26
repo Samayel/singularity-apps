@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+OUTDIR="${PWD}"
+TMPDIR="$(mktemp --directory --tmpdir=${PWD})"
+echo "TMPDIR=${TMPDIR}"
+
+export GOPATH="${TMPDIR}/go"
+export PATH="/opt/go/bin:${PATH}:${GOPATH}/bin"
+
+export VERSION=3.7.3
+curl -sSL https://github.com/hpcng/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz | tar -C ${TMPDIR} -xz
+cd "${TMPDIR}/singularity"
+
+./mconfig --prefix="${TMPDIR}/opt/singularity"
+make -C ./builddir
+make -C ./builddir install
+
+cd "${TMPDIR}/opt"
+tar -cJf "${OUTDIR}/singularity-${VERSION}-bin.tar.xz" singularity
+
+rm -rf "${TMPDIR}"

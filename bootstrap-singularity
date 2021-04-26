@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+
+sudo /opt/singularity/bin/singularity run --allow-setuid singularity/singularity-bootstrap.sif
+sudo sh -c 'ls -la /root/singularity-*-bin.tar.xz'
