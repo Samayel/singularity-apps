@@ -2,4 +2,4 @@
 
 set -e
 
-sudo /opt/singularity/bin/singularity build "$1.sif" "$1.def"
+sudo /opt/singularity/bin/singularity build -F "$1.sif" "$1.def"
