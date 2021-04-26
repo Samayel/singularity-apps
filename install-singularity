@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+
+mkdir /opt
+curl -sSL https://fs.quyo.net/singularity/singularity-3.7.3-bin.tar.xz | tar -C /opt -xf
