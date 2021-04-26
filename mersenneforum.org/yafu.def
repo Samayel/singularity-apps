@@ -1,0 +1,129 @@
+Bootstrap: docker
+From: alpine:3.13.5
+
+%environment
+    export LC_ALL=C
+
+%post
+    apk add --no-cache xz alpine-sdk m4 subversion libtool autoconf automake
+    mkdir -p /usr/local/src/
+
+    #
+    # install GMP [6.2.1]
+    #
+    cd /usr/local/src/
+    wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
+    tar -xf gmp-6.2.1.tar.xz
+    cd gmp-6.2.1/
+    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" --enable-shared --enable-static --enable-cxx
+    make
+    make check
+    make install
+
+    #
+    # install GMP-ECM [r3092]
+    #
+    cd /usr/local/src/
+    svn checkout -r3092 https://scm.gforge.inria.fr/anonscm/svn/ecm/trunk/ ecm
+    cd ecm/
+    libtoolize
+    autoreconf -i
+    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" --enable-shared --disable-static --enable-asm-redc --disable-assert --with-gmp=/usr/local
+    make
+    make ecm-params
+    make
+    make check
+    make install
+    make installcheck
+
+    #
+    # install MSIEVE [r1041]
+    #
+    cd /usr/local/src/
+    svn checkout -r1041 https://svn.code.sf.net/p/msieve/code/trunk/ msieve
+    cd msieve/
+    sed -i -e "s|OPT_FLAGS = -O3 -fomit-frame-pointer -march=native|OPT_FLAGS = -O3 -fomit-frame-pointer -m64 -march=native -mtune=native|" Makefile
+    make all ECM=1 NO_ZLIB=1
+    cp msieve /usr/local/bin/
+    cp include/msieve.h /usr/local/include/
+    cp zlib/zconf.h /usr/local/include/
+    cp zlib/zlib.h /usr/local/include/
+    cp libmsieve.a /usr/local/lib/
+
+    #
+    # install YTOOLS [b9fa6ce / 2021-04-22]
+    #
+    cd /usr/local/src/
+    git clone https://github.com/bbuhrow/ytools.git
+    git -C ytools checkout b9fa6ce9bf8eee586ce7b75eba1a65da93ac08ef
+    cd ytools/
+    make COMPILER=gcc USE_AVX2=1
+    cp ytools.h /usr/local/include/
+    cp threadpool.h /usr/local/include/
+    cp libytools.a /usr/local/lib/
+
+    #
+    # install YSIEVE [457fafc / 2021-04-22]
+    #
+    cd /usr/local/src/
+    git clone https://github.com/bbuhrow/ysieve.git
+    git -C ysieve checkout 457fafcf1b402092310a4ad9c398df8bedace98e
+    cd ysieve/
+    make COMPILER=gcc USE_AVX2=1
+    cp soe.h /usr/local/include/
+    cp libysieve.a /usr/local/lib/
+    cp ysieve /usr/local/bin/
+
+    #
+    # install YAFU [22e2aa2 / 2021-04-23]
+    #
+    cd /usr/local/src/
+    git clone https://github.com/bbuhrow/yafu.git
+    git -C yafu checkout 22e2aa2637375fb735e044774f306a56ba31f81e
+    cd yafu/
+    sed -i -e 's|OPT_FLAGS = -O2|OPT_FLAGS = -O2 -m64 -march=native -mtune=native|'                                                                    Makefile
+    sed -i -e 's|LIBS += -lecm /mnt/g/projects/factoring/gmp-install/wsl/6.1.2/lib/libgmp.a -lytools -lysieve|LIBS += -lecm -lgmp -lytools -lysieve|g' Makefile
+    make yafu COMPILER=gcc NFS=1 USE_SSE41=1 USE_AVX2=1
+    cp yafu /usr/local/bin/
+
+    #
+    # install GGNFS [3490572 / 2011-04-23]
+    #
+    cd /usr/local/src/
+    git clone https://github.com/radii/ggnfs.git
+    git -C ggnfs checkout 3490572ca8671635a1b8d13a28aef3e34a657fc7
+    cd ggnfs/src/experimental/lasieve4_64/
+    sed -i -e 's|-march=k8 -mtune=k8|-march=native -mtune=native|'                     athlon64/Makefile
+    sed -i -e 's|^CFLAGS=|CFLAGS=-I/usr/local/include |'                               athlon64/Makefile
+    sed -i -e 's|-march=k8 -mtune=k8|-march=native -mtune=native|'                     Makefile
+    sed -i -e 's|^INC=|INC=-I/usr/local/include |'                                     Makefile
+    sed -i -e 's|^LIBFLAGS=|LIBFLAGS=-L/usr/local/lib -Wl,-rpath -Wl,/usr/local/lib |' Makefile
+    sed -i -e 's|typedef unsigned long long ullong;|typedef unsigned long ulong;\ntypedef unsigned long long ullong;|' if.h
+    wget https://raw.githubusercontent.com/Samayel/mersenneforum.org/master/ggnfs/2011-04-23_3490572/asm.patch
+    git apply asm.patch
+    cd athlon64/
+    make liblasieve.a
+    make liblasieveI11.a
+    make liblasieveI12.a
+    make liblasieveI13.a
+    make liblasieveI14.a
+    make liblasieveI15.a
+    make liblasieveI16.a
+    cp *.a ../
+    cd ../
+    ln -s athlon64/ asm
+    make
+    mkdir /usr/local/bin/ggnfs/
+    cp gnfs-lasieve4I11e /usr/local/bin/ggnfs/
+    cp gnfs-lasieve4I12e /usr/local/bin/ggnfs/
+    cp gnfs-lasieve4I13e /usr/local/bin/ggnfs/
+    cp gnfs-lasieve4I14e /usr/local/bin/ggnfs/
+    cp gnfs-lasieve4I15e /usr/local/bin/ggnfs/
+    cp gnfs-lasieve4I16e /usr/local/bin/ggnfs/
+
+    rm -rf /usr/local/src/
+    apk del xz alpine-sdk m4 subversion libtool autoconf automake
+
+%runscript
+    echo "Arguments received: $*"
+    exec /usr/local/bin/yafu "$@"
