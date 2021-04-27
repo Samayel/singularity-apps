@@ -125,5 +125,16 @@ From: alpine:3.13.5
     apk del xz alpine-sdk m4 subversion libtool autoconf automake
 
 %runscript
-    echo "Arguments received: $*"
     exec /usr/local/bin/yafu "$@"
+
+%apprun ecm
+    exec /usr/local/bin/ecm "$@"
+
+%apprun msieve
+    exec /usr/local/bin/msieve "$@"
+
+%apprun yafu
+    exec /usr/local/bin/yafu "$@"
+
+%apprun ysieve
+    exec /usr/local/bin/ysieve "$@"
