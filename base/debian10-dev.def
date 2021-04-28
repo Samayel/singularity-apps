@@ -1,0 +1,12 @@
+Bootstrap: docker
+From: debian:10
+
+%environment
+    export LC_ALL=C
+
+%post
+    apt-get -y update
+    apt-get -y install build-essential autoconf automake libtool m4
+    apt-get -y install subversion git wget curl
+    apt-get -y install findutils grep sed gawk patch
+    apt-get -y install mc joe screen
