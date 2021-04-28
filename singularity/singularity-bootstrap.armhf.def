@@ -1,0 +1,17 @@
+Bootstrap: docker
+From: debian:10
+
+%environment
+    export LC_ALL=C
+
+%files
+    ./singularity-bootstrap.build /
+
+%post
+    chmod a+x /singularity-bootstrap.build
+    apt-get -y update
+    apt-get -y install build-essential uuid-dev libgpgme-dev squashfs-tools libseccomp-dev wget curl pkg-config git cryptsetup-bin
+    curl -fsSL https://golang.org/dl/go1.16.3.linux-armv6l.tar.gz | tar -C /usr/local -xz
+
+%runscript
+    exec /singularity-bootstrap.build armhf "$@"
