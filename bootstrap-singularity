@@ -2,7 +2,8 @@
 
 set -e
 
+ARCH=amd64
 VERSION=3.7.3
 
-sudo /opt/singularity/bin/singularity run --allow-setuid --writable-tmpfs singularity/singularity-bootstrap.sif ${VERSION}
-sudo sh -c 'ls -la /root/singularity-*-bin.tar.xz'
+sudo /opt/singularity/bin/singularity run --allow-setuid --writable-tmpfs singularity/singularity-bootstrap.${ARCH}.sif ${VERSION}
+sudo sh -c 'ls -la /root/singularity-*.tar.xz'

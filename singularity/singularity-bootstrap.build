@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+ARCH=$1
+VERSION=$2
+
 export GOPATH=/usr/local/gopath
 export PATH="/usr/local/go/bin:${PATH}:${GOPATH}/bin"
 
-VERSION=$1
 curl -sSL https://github.com/hpcng/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz | tar -C /usr/local -xz
 cd /usr/local/singularity
 
@@ -12,4 +14,4 @@ make -C ./builddir
 make -C ./builddir install
 
 cd /opt
-tar -cJf /root/singularity-${VERSION}-bin.tar.xz singularity
+tar -cJf /root/singularity-${VERSION}-${ARCH}.tar.xz singularity
