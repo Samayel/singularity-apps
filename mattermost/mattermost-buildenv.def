@@ -1,0 +1,15 @@
+Bootstrap: localimage
+From: ../base/debian10-dev+go1.16.sif
+
+%environment
+    export PATH="$PATH:/usr/local/node/bin"
+
+%post
+    apt-get -y install libgl1 libxi6
+    mkdir -p /usr/local/node
+    curl -fsSL https://nodejs.org/dist/v14.16.1/node-v14.16.1-linux-x64.tar.xz | tar -C /usr/local/node --strip-components=1 -xJ
+
+%runscript
+    export GOPATH="$PWD/go"
+    export PATH="$PATH:$GOPATH/bin"
+    exec /usr/bin/env bash "$@"
