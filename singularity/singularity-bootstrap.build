@@ -6,7 +6,7 @@ VERSION=$2
 export GOPATH=/usr/local/gopath
 export PATH="/usr/local/go/bin:${PATH}:${GOPATH}/bin"
 
-curl -sSL https://github.com/hpcng/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz | tar -C /usr/local -xz
+curl -fsSL https://github.com/hpcng/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz | tar -C /usr/local -xz
 cd /usr/local/singularity
 
 ./mconfig --prefix=/opt/singularity
