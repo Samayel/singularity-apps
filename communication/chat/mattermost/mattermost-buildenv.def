@@ -1,5 +1,5 @@
 Bootstrap: localimage
-From: ../base/debian10-dev+go1.16.sif
+From: ../../../base/debian10-dev+go1.16.sif
 
 %environment
     export PATH="$PATH:/usr/local/node/bin"

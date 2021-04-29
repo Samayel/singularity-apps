@@ -1,2 +1,2 @@
 **/*.sif
-mattermost/mattermost/**
+communication/chat/mattermost/mattermost/**
