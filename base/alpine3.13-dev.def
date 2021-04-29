@@ -1,0 +1,11 @@
+Bootstrap: docker
+From: alpine:3.13
+
+%environment
+    export LC_ALL=C
+
+%post
+    apk add --no-cache alpine-sdk autoconf automake libtool m4 
+    apk add --no-cache subversion git wget curl xz
+    apk add --no-cache findutils grep sed gawk patch
+    apk add --no-cache mc joe screen

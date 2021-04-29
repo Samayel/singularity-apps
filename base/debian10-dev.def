@@ -3,10 +3,11 @@ From: debian:10
 
 %environment
     export LC_ALL=C
+    export DEBIAN_FRONTEND=noninteractive
 
 %post
-    apt-get -y update
-    apt-get -y install build-essential autoconf automake libtool m4
-    apt-get -y install subversion git wget curl
-    apt-get -y install findutils grep sed gawk patch
-    apt-get -y install mc joe screen
+    apt-get -yq update
+    apt-get -yq install build-essential autoconf automake libtool m4
+    apt-get -yq install subversion git wget curl
+    apt-get -yq install findutils grep sed gawk patch
+    apt-get -yq install mc joe screen
