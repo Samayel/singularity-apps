@@ -1,8 +1,17 @@
 Bootstrap: docker
 From: golang:1.16
+Stage: builder
 
 %post
     go get -u github.com/dundee/gdu/v4
 
+
+Bootstrap: docker
+From: debian:10
+Stage: final
+
+%files from builder
+    /go/bin/gdu /usr/local/bin/gdu
+
 %runscript
-    exec /go/bin/gdu "$@"
+    exec /usr/local/bin/gdu "$@"
