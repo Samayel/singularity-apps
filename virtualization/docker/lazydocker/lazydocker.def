@@ -1,0 +1,17 @@
+Bootstrap: docker
+From: golang:1.16
+Stage: builder
+
+%post
+    go get -u github.com/jesseduffield/lazydocker
+
+
+Bootstrap: docker
+From: debian:10
+Stage: final
+
+%files from builder
+    /go/bin/lazydocker /usr/local/bin/lazydocker
+
+%runscript
+    exec /usr/local/bin/lazydocker "$@"
