@@ -1,0 +1,6 @@
+Bootstrap: docker
+From: ubuntu:20.10
+
+%post
+    apt-get -yq update
+    apt-get -yq install python3-pip
