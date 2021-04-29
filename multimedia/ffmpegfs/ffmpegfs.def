@@ -1,0 +1,12 @@
+Bootstrap: docker
+From: debian:10
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+
+    echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
+    apt-get -yq update
+    apt-get -yq -t buster-backports install ffmpegfs
+
+%runscript
+    exec ffmpegfs "$@"
