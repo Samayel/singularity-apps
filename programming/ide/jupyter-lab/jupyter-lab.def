@@ -1,0 +1,5 @@
+Bootstrap: docker
+From: continuumio/anaconda3
+
+%runscript
+    exec /opt/conda/bin/jupyter lab --notebook-dir="$PWD" --ip='*' --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' "$@"
