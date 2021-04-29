@@ -1,0 +1,21 @@
+Bootstrap: localimage
+From: ../../../base/debian10-dev.sif
+Stage: builder
+
+%post
+    curl -fsSL https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64.tgz | tar -C /usr/local/bin -xz
+    chmod +x /usr/local/bin/gdu_linux_amd64
+
+
+Bootstrap: docker
+From: debian:10
+Stage: final
+
+%files from builder
+    /usr/local/bin/gdu_linux_amd64
+
+%post
+    ln -s /usr/local/bin/gdu_linux_amd64 /usr/local/bin/gdu
+
+%runscript
+    exec /usr/local/bin/gdu "$@"
