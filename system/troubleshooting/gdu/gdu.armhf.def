@@ -1,0 +1,8 @@
+Bootstrap: docker
+From: golang:1.16
+
+%post
+    go get -u github.com/dundee/gdu/v4
+
+%runscript
+    exec /go/bin/gdu "$@"

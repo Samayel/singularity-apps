@@ -1,11 +1,13 @@
-Bootstrap: localimage
-From: ../../../base/debian10-dev+go1.16.sif
+Bootstrap: docker
+From: golang:1.16
 
 %environment
     export PATH="$PATH:/usr/local/node/bin"
 
 %post
-    apt-get -y install libgl1 libxi6
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -yq update
+    apt-get -yq install xz-utils git diffutils patch sed joe autoconf libgl1 libxi6
     mkdir -p /usr/local/node
     curl -fsSL https://nodejs.org/dist/v14.16.1/node-v14.16.1-linux-x64.tar.xz | tar -C /usr/local/node --strip-components=1 -xJ
 
