@@ -1,0 +1,20 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%post
+    /opt/conda/bin/conda update  --yes conda
+    /opt/conda/bin/conda install --yes -c conda-forge gmp mpfr arb libflint antic python notebook jupyterlab
+    /opt/conda/bin/conda clean   --yes --index-cache --tarballs --packages
+    export NB_PYTHON_PREFIX=/opt/conda
+
+    apt -yq update
+    apt -yq install build-essential git
+    git clone https://github.com/fredrik-johansson/calcium.git /opt/calcium
+    cd /opt/calcium
+    . ./.binder/postBuild
+    apt -yq remove --purge build-essential git
+    apt -yq autoremove --purge
+    apt -yq clean
+
+%runscript
+    exec /opt/conda/bin/jupyter lab --notebook-dir="$PWD" --ip='*' --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' "$@"
