@@ -1,0 +1,71 @@
+Bootstrap: localimage
+From: ../../../base/debian10-dev.sif
+Stage: builder
+
+%post
+    apt-get -yq install cmake python3
+    mkdir -p /usr/local/src/
+
+    #
+    # install GMP [6.2.1]
+    #
+    cd /usr/local/src/
+    wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
+    tar -xf gmp-6.2.1.tar.xz
+    cd gmp-6.2.1/
+    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" --enable-shared --enable-static --enable-cxx
+    make
+    make check
+    make install
+
+    #
+    # install GMP-ECM [r3092]
+    #
+    cd /usr/local/src/
+    svn checkout -r3092 https://scm.gforge.inria.fr/anonscm/svn/ecm/trunk/ ecm
+    cd ecm/
+    libtoolize
+    autoreconf -i
+    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" --with-gmp=/usr/local --enable-shared --disable-static --enable-asm-redc --disable-assert
+    make
+    make ecm-params
+    make
+    make check
+    make install
+    make installcheck
+
+    #
+    # install CADO-NFS [44349958 / 2021-05-07]
+    #
+    cd /usr/local/src/
+    git clone https://gitlab.inria.fr/cado-nfs/cado-nfs
+    git -C cado-nfs checkout 44349958caa4f93b7708a5a5a8bf33ebe49c3a83
+    cd cado-nfs/
+    cp local.sh.example local.sh
+    echo >> local.sh
+    echo "GMP=/usr/local" >> local.sh
+    echo "GMPECM=/usr/local" >> local.sh
+    echo "PREFIX=/usr/local" >> local.sh
+    make
+    make install
+
+    rm -rf /usr/local/src/
+
+
+Bootstrap: docker
+From: debian:10
+Stage: final
+
+%files from builder
+    /usr/local /usr/
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -yq update
+    apt-get -yq install python3 openssl libgomp1 procps
+
+%runscript
+    exec /usr/local/bin/cado-nfs.py "$@"
