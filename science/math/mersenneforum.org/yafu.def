@@ -1,12 +1,11 @@
-Bootstrap: docker
-From: alpine:3.13.5
+Bootstrap: localimage
+From: ../../../base/debian10-dev.sif
 Stage: builder
 
 %environment
     export LC_ALL=C
 
 %post
-    apk add --no-cache xz alpine-sdk m4 subversion libtool autoconf automake
     mkdir -p /usr/local/src/
 
     #
@@ -29,7 +28,7 @@ Stage: builder
     cd ecm/
     libtoolize
     autoreconf -i
-    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" --with-gmp=/usr/local --enable-shared --disable-static --enable-asm-redc --disable-assert
+    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" LDFLAGS="-L/usr/local/lib -Wl,-rpath -Wl,/usr/local/lib" --with-gmp=/usr/local --enable-shared --disable-static --enable-asm-redc --disable-assert
     make
     make ecm-params
     make
@@ -44,6 +43,9 @@ Stage: builder
     svn checkout -r1041 https://svn.code.sf.net/p/msieve/code/trunk/ msieve
     cd msieve/
     sed -i -e "s|OPT_FLAGS = -O3 -fomit-frame-pointer -march=native|OPT_FLAGS = -O3 -fomit-frame-pointer -m64 -march=native -mtune=native|" Makefile
+    sed -i -e "s|\(# tweak the compile flags\)|CFLAGS += -I/usr/local/include \n\1|"                                                        Makefile
+    sed -i -e "s|\(# tweak the compile flags\)|LIBS += -L/usr/local/lib \n\1|"                                                              Makefile
+    sed -i -e "s|\(# tweak the compile flags\)|LIBS += -Wl,-rpath -Wl,/usr/local/lib \n\1|"                                                 Makefile
     make all ECM=1 NO_ZLIB=1
     cp msieve /usr/local/bin/
     cp include/msieve.h /usr/local/include/
@@ -58,6 +60,10 @@ Stage: builder
     git clone https://github.com/bbuhrow/ytools.git
     git -C ytools checkout b9fa6ce9bf8eee586ce7b75eba1a65da93ac08ef
     cd ytools/
+    sed -i -e 's|OPT_FLAGS = -O3|OPT_FLAGS = -O3 -m64 -march=native -mtune=native|'                                                                    Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|INC += -I/usr/local/include \n\1|"                             Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|LIBS += -L/usr/local/lib \n\1|"                                Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|LIBS += -Wl,-rpath -Wl,/usr/local/lib \n\1|"                   Makefile
     make COMPILER=gcc USE_AVX2=1
     cp ytools.h /usr/local/include/
     cp threadpool.h /usr/local/include/
@@ -70,6 +76,10 @@ Stage: builder
     git clone https://github.com/bbuhrow/ysieve.git
     git -C ysieve checkout 457fafcf1b402092310a4ad9c398df8bedace98e
     cd ysieve/
+    sed -i -e 's|OPT_FLAGS = -O3|OPT_FLAGS = -O3 -m64 -march=native -mtune=native|'                                                                    Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|INC += -I/usr/local/include \n\1|"                             Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|LIBS += -L/usr/local/lib \n\1|"                                Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|LIBS += -Wl,-rpath -Wl,/usr/local/lib \n\1|"                   Makefile
     make COMPILER=gcc USE_AVX2=1
     cp soe.h /usr/local/include/
     cp libysieve.a /usr/local/lib/
@@ -83,6 +93,9 @@ Stage: builder
     git -C yafu checkout 22e2aa2637375fb735e044774f306a56ba31f81e
     cd yafu/
     sed -i -e 's|OPT_FLAGS = -O2|OPT_FLAGS = -O2 -m64 -march=native -mtune=native|'                                                                    Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|INC += -I/usr/local/include \n\1|"                             Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|LIBS += -L/usr/local/lib \n\1|"                                Makefile
+    sed -i -e "s|\(# ===================== compiler options =========================\)|LIBS += -Wl,-rpath -Wl,/usr/local/lib \n\1|"                   Makefile
     sed -i -e 's|LIBS += -lecm /mnt/g/projects/factoring/gmp-install/wsl/6.1.2/lib/libgmp.a -lytools -lysieve|LIBS += -lecm -lgmp -lytools -lysieve|g' Makefile
     make yafu COMPILER=gcc NFS=1 USE_SSE41=1 USE_AVX2=1
     cp yafu /usr/local/bin/
@@ -93,13 +106,23 @@ Stage: builder
     cd /usr/local/src/
     git clone https://github.com/radii/ggnfs.git
     git -C ggnfs checkout 3490572ca8671635a1b8d13a28aef3e34a657fc7
-    cd ggnfs/src/experimental/lasieve4_64/
+    mkdir /usr/local/bin/ggnfs/
+
+    cd ggnfs
+    sed -i -e "s|^LOCALINC=.*$|LOCALINC=-I/usr/local/include|"                                      Makefile
+    sed -i -e "s|^LOCALLIB=.*$|LOCALLIB=-L/usr/local/lib -Wl,-rpath -Wl,/usr/local/lib|"            Makefile
+    sed -i -e "s|ALLOPT=.*$|ALLOPT=-march=native -mtune=native -m64 -pipe|"                         src/Makefile
+    sed -i -e 's|LSBINS=latsiever polsel|LSBINS=polsel|'                                            src/Makefile
+    sed -i -e 's|strip $(BINS) ../bin/gnfs-lasieve4I1?e ../bin/pol51*|strip $(BINS) ../bin/pol51*|' src/Makefile
+    make x86_64
+    cp bin/* /usr/local/bin/ggnfs/
+
+    cd src/experimental/lasieve4_64/
     sed -i -e 's|-march=k8 -mtune=k8|-march=native -mtune=native|'                     athlon64/Makefile
     sed -i -e 's|^CFLAGS=|CFLAGS=-I/usr/local/include |'                               athlon64/Makefile
     sed -i -e 's|-march=k8 -mtune=k8|-march=native -mtune=native|'                     Makefile
     sed -i -e 's|^INC=|INC=-I/usr/local/include |'                                     Makefile
     sed -i -e 's|^LIBFLAGS=|LIBFLAGS=-L/usr/local/lib -Wl,-rpath -Wl,/usr/local/lib |' Makefile
-    sed -i -e 's|typedef unsigned long long ullong;|typedef unsigned long ulong;\ntypedef unsigned long long ullong;|' if.h
     wget https://raw.githubusercontent.com/Samayel/mersenneforum.org/master/ggnfs/2011-04-23_3490572/asm.patch
     git apply asm.patch
     cd athlon64/
@@ -114,7 +137,6 @@ Stage: builder
     cd ../
     ln -s athlon64/ asm
     make
-    mkdir /usr/local/bin/ggnfs/
     cp gnfs-lasieve4I11e /usr/local/bin/ggnfs/
     cp gnfs-lasieve4I12e /usr/local/bin/ggnfs/
     cp gnfs-lasieve4I13e /usr/local/bin/ggnfs/
@@ -126,7 +148,7 @@ Stage: builder
 
 
 Bootstrap: docker
-From: alpine:3.13.5
+From: debian:10
 Stage: final
 
 %files from builder
