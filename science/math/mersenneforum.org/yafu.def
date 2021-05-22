@@ -1,5 +1,6 @@
 Bootstrap: docker
 From: alpine:3.13.5
+Stage: builder
 
 %environment
     export LC_ALL=C
@@ -28,7 +29,7 @@ From: alpine:3.13.5
     cd ecm/
     libtoolize
     autoreconf -i
-    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" --enable-shared --disable-static --enable-asm-redc --disable-assert --with-gmp=/usr/local
+    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" --with-gmp=/usr/local --enable-shared --disable-static --enable-asm-redc --disable-assert
     make
     make ecm-params
     make
@@ -122,7 +123,17 @@ From: alpine:3.13.5
     cp gnfs-lasieve4I16e /usr/local/bin/ggnfs/
 
     rm -rf /usr/local/src/
-    apk del xz alpine-sdk m4 subversion libtool autoconf automake
+
+
+Bootstrap: docker
+From: alpine:3.13.5
+Stage: final
+
+%files from builder
+    /usr/local /usr/
+
+%environment
+    export LC_ALL=C
 
 %runscript
     exec /usr/local/bin/yafu "$@"
