@@ -26,7 +26,7 @@ Stage: builder
     cd ecm/
     libtoolize
     autoreconf -i
-    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" --with-gmp=/usr/local --enable-shared --disable-static --enable-asm-redc --disable-assert
+    ./configure ABI=64 CFLAGS="-O2 -m64 -march=native -mtune=native" LDFLAGS="-L/usr/local/lib -Wl,-rpath -Wl,/usr/local/lib" --with-gmp=/usr/local --enable-shared --disable-static --enable-asm-redc --disable-
     make
     make ecm-params
     make
