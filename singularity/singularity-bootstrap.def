@@ -13,8 +13,8 @@ From: golang:1.16
     VERSION=$1
     ARCH=$2
 
-    curl -fsSL https://github.com/hpcng/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz | tar -C /usr/local -xz
-    cd /usr/local/singularity
+    curl -fsSL https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-ce-${VERSION}.tar.gz | tar -C /usr/local -xz
+    cd /usr/local/singularity-ce-${VERSION}
 
     ./mconfig --prefix=/opt/singularity
     make -C ./builddir
