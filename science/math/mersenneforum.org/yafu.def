@@ -86,11 +86,11 @@ Stage: builder
     cp ysieve /usr/local/bin/
 
     #
-    # install YAFU [22e2aa2 / 2021-04-23]
+    # install YAFU [2.02 / 5ddca20 / 2021-05-11]
     #
     cd /usr/local/src/
     git clone https://github.com/bbuhrow/yafu.git
-    git -C yafu checkout 22e2aa2637375fb735e044774f306a56ba31f81e
+    git -C yafu checkout 5ddca2064c27dc9f9e52aa544c171017cae3f72a
     cd yafu/
     sed -i -e 's|OPT_FLAGS = -O2|OPT_FLAGS = -O2 -m64 -march=native -mtune=native|'                                                                    Makefile
     sed -i -e "s|\(# ===================== compiler options =========================\)|INC += -I/usr/local/include \n\1|"                             Makefile
