@@ -1,0 +1,114 @@
+Bootstrap: localimage
+From: yafu.sif
+Stage: builder
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -yq update
+    apt-get -yq install build-essential autoconf automake libtool m4
+    apt-get -yq install subversion git wget curl
+    apt-get -yq install findutils grep sed gawk patch unzip
+    mkdir -p /usr/local/src/
+
+    #
+    # install ECM.PY [0.44]
+    #
+    cd /usr/local/src/
+    wget -O ecm-py_v0.44.zip 'https://www.mersenneforum.org/attachment.php?attachmentid=20519&d=1559362929'
+    unzip ecm-py_v0.44.zip
+    chmod a+x ecm.py
+    sed -i -e '1s|^|#!/usr/bin/env python2\n|'                  ecm.py
+    sed -i -e "s|^ECM_PATH = './'|ECM_PATH = '/usr/local/bin'|" ecm.py
+    cp ecm.py /usr/local/bin
+
+    #
+    # install FACTMSIEVE.PY [0.86]
+    #
+    cd /usr/local/src/
+    wget -O factmsieve.py https://fs.quyo.net/mersenneforum.org/factmsieve-0.86.py
+    chmod a+x factmsieve.py
+    sed -i 's/\r//g'                                                                   factmsieve.py
+    sed -i -e '1s|^|#!/usr/bin/env python2\n|'                                         factmsieve.py
+    sed -i -e "s|  al = {} if VERBOSE else {'creationflags' : 0x08000000 }|  al = {}|" factmsieve.py
+    sed -i -e "s|^GGNFS_PATH = .*$|GGNFS_PATH = '/usr/local/bin/ggnfs/'|"              factmsieve.py
+    sed -i -e "s|^MSIEVE_PATH = .*$|MSIEVE_PATH = '/usr/local/bin/'|"                  factmsieve.py
+    sed -i -e "s|^NUM_CORES = .*$|NUM_CORES = 2|"                                      factmsieve.py
+    sed -i -e "s|^THREADS_PER_CORE = .*$|THREADS_PER_CORE = 1|"                        factmsieve.py
+    sed -i -e "s|^USE_CUDA = .*$|USE_CUDA = False|"                                    factmsieve.py
+    sed -i -e "s|^MSIEVE_POLY_TIME_LIMIT = .*$|MSIEVE_POLY_TIME_LIMIT = 0|"            factmsieve.py
+    sed -i -e "s|^VERBOSE = True$|VERBOSE = False|"                                    factmsieve.py
+    cp factmsieve.py /usr/local/bin
+
+    #
+    # install ALIQUEIT [1c97023 / 2020-11-06]
+    #
+    cd /usr/local/src/
+    git clone https://github.com/ChristianBeer/aliqueit.git
+    git -C aliqueit checkout 1c97023777735dd81200ad6f36ca9a8d1865f879
+    cd aliqueit
+
+    sed -i -e "s|^\(ggnfs_clean_cmd = del\)|//\1|"                           aliqueit.ini
+    sed -i -e "s|^//\(ggnfs_clean_cmd = rm\)|\1|"                            aliqueit.ini
+    sed -i -e "s|^\(null_device = nul\)|//\1|"                               aliqueit.ini
+    sed -i -e "s|^//\(null_device = /dev\)|\1|"                              aliqueit.ini
+    sed -i -e "s|^ecm_cmd = .*$|ecm_cmd = /usr/local/bin/ecm|"               aliqueit.ini
+    sed -i -e "s|^ecmpy_cmd = .*$|ecmpy_cmd = /usr/local/bin/ecm.py|"        aliqueit.ini
+    sed -i -e "s|^yafu_cmd = .*$|yafu_cmd = /usr/local/bin/yafu|"            aliqueit.ini
+    sed -i -e "s|^msieve_cmd = .*$|msieve_cmd = /usr/local/bin/msieve|"      aliqueit.ini
+    sed -i -e "s|^ggnfs_cmd = .*$|ggnfs_cmd = /usr/local/bin/factmsieve.py|" aliqueit.ini
+    sed -i -e "s|^use_ecmpy = .*$|use_ecmpy = true|"                         aliqueit.ini
+    sed -i -e "s|^gnfs_cutoff = .*$|gnfs_cutoff = 95|"                       aliqueit.ini
+    cp aliqueit.ini /usr/local/bin/
+    cp aliqueit.txt /usr/local/bin/
+
+    cd src
+    sed -i -e "s|GMP_INCLUDE_DIR = ../3rdParty/include|GMP_INCLUDE_DIR = /usr/local/include|"                          Makefile
+    sed -i -e "s|GMP_LIBRARY_DIR = ../3rdParty/lib|GMP_LIBRARY_DIR = /usr/local/lib|"                                  Makefile
+    sed -i -e "s|LIBS = -L\$(GMP_LIBRARY_DIR) -lgmp|LIBS = -L\$(GMP_LIBRARY_DIR) -Wl,-rpath -Wl,/usr/local/lib -lgmp|" Makefile
+    make
+    cp aliqueit /usr/local/bin/
+
+    rm -rf /usr/local/src/
+
+
+Bootstrap: docker
+From: debian:10
+Stage: final
+
+%files from builder
+    /usr/local /usr/
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -yq update
+    apt-get -yq install python2
+
+%runscript
+    exec /usr/local/bin/aliqueit "$@"
+
+%apprun ecm
+    exec /usr/local/bin/ecm "$@"
+
+%apprun msieve
+    exec /usr/local/bin/msieve "$@"
+
+%apprun yafu
+    exec /usr/local/bin/yafu "$@"
+
+%apprun ysieve
+    exec /usr/local/bin/ysieve "$@"
+
+%apprun ecm.py
+    exec /usr/local/bin/ecm.py "$@"
+
+%apprun factmsieve.py
+    exec /usr/local/bin/factmsieve.py "$@"
+
+%apprun aliqueit
+    exec /usr/local/bin/aliqueit "$@"
