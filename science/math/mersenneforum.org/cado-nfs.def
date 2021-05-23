@@ -3,7 +3,6 @@ From: ../../../base/debian10-dev.sif
 Stage: builder
 
 %post
-    apt-get -yq install cmake python3
     mkdir -p /usr/local/src/
 
     #
@@ -66,6 +65,7 @@ Stage: final
     export DEBIAN_FRONTEND=noninteractive
     apt-get -yq update
     apt-get -yq install python3 openssl libgomp1 procps
+    apt-get -yq clean
 
 %runscript
     exec /usr/local/bin/cado-nfs.py "$@"
