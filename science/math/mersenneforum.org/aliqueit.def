@@ -8,7 +8,7 @@ Stage: builder
 %post
     export DEBIAN_FRONTEND=noninteractive
     apt-get -yq update
-    apt-get -yq install build-essential autoconf automake libtool m4
+    apt-get -yq install build-essential autoconf automake libtool m4 cmake python3
     apt-get -yq install subversion git wget curl
     apt-get -yq install findutils grep sed gawk patch unzip
     mkdir -p /usr/local/src/
@@ -88,6 +88,7 @@ Stage: final
     export DEBIAN_FRONTEND=noninteractive
     apt-get -yq update
     apt-get -yq install python2
+    apt-get -yq clean
 
 %runscript
     exec /usr/local/bin/aliqueit "$@"
