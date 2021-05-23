@@ -1,0 +1,41 @@
+Bootstrap: localimage
+From: ../../../base/debian10-dev.sif
+Stage: builder
+
+%post
+    mkdir -p /usr/local/src/
+
+    #
+    # install PRIMESUM [cf01373 / 2021-01-07]
+    #
+    cd /usr/local/src/
+    git clone https://github.com/kimwalisch/primesum.git
+    git -C primesum checkout cf01373ebbb9c029920696e97c055c6ebfa56f6c
+    cd primesum/
+    export LDFLAGS="-Wl,-rpath -Wl,/usr/local/lib"
+    cmake -DBUILD_TESTS=ON .
+    make -j
+    ctest
+    make install
+
+    rm -rf /usr/local/src/
+
+
+Bootstrap: docker
+From: debian:10
+Stage: final
+
+%files from builder
+    /usr/local /usr/
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -yq update
+    apt-get -yq install libgomp1
+    apt-get -yq clean
+
+%runscript
+    exec /usr/local/bin/primesum "$@"
