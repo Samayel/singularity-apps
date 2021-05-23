@@ -2,6 +2,9 @@ Bootstrap: localimage
 From: yafu.sif
 Stage: builder
 
+%files
+    ./aliqueit_b2scale.patch /usr/local/src/
+
 %environment
     export LC_ALL=C
 
@@ -49,6 +52,8 @@ Stage: builder
     git clone https://github.com/ChristianBeer/aliqueit.git
     git -C aliqueit checkout 1c97023777735dd81200ad6f36ca9a8d1865f879
     cd aliqueit
+
+    git apply /usr/local/src/aliqueit_b2scale.patch
 
     sed -i -e "s|^\(ggnfs_clean_cmd = del\)|//\1|"                           aliqueit.ini
     sed -i -e "s|^//\(ggnfs_clean_cmd = rm\)|\1|"                            aliqueit.ini
