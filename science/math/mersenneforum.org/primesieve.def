@@ -1,0 +1,35 @@
+Bootstrap: localimage
+From: ../../../base/debian10-dev.sif
+Stage: builder
+
+%post
+    mkdir -p /usr/local/src/
+
+    #
+    # install PRIMESIEVE [733da48 / 2021-04-09]
+    #
+    cd /usr/local/src/
+    git clone https://github.com/kimwalisch/primesieve.git
+    git -C primesieve checkout 733da48b85d270afcea3b7e5126393f576a878b3
+    cd primesieve/
+    export LDFLAGS="-Wl,-rpath -Wl,/usr/local/lib"
+    cmake -DBUILD_TESTS=ON .
+    make -j
+    ctest
+    make install
+
+    rm -rf /usr/local/src/
+
+
+Bootstrap: docker
+From: debian:10
+Stage: final
+
+%files from builder
+    /usr/local /usr/
+
+%environment
+    export LC_ALL=C
+
+%runscript
+    exec /usr/local/bin/primesieve "$@"
