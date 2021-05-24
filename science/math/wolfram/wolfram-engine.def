@@ -1,0 +1,43 @@
+Bootstrap: docker
+From: debian:10
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -yq update
+    apt-get -yq install wget xz-utils git
+
+    mkdir -p /usr/local/src/
+
+    cd /usr/local/src/
+    wget -O WolframEngine_LINUX.sh https://account.wolfram.com/download/public/wolfram-engine/desktop/LINUX
+    bash ./WolframEngine_LINUX.sh
+
+    wget -O Miniforge3.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh
+    bash ./Miniforge3.sh -b -p /opt/conda
+    /opt/conda/bin/conda update  -y conda
+    /opt/conda/bin/conda install -y notebook jupyterlab
+    /opt/conda/bin/conda clean --all
+
+    cd /opt
+    git clone https://github.com/WolframResearch/WolframLanguageForJupyter.git
+
+    apt-get -yq remove --purge wget xz-utils git
+    apt-get -yq autoremove
+    apt-get -yq clean
+
+    rm -rf /usr/local/src/
+
+%runscript
+    exec wolframscript "$@"
+
+%apprun configure-jupyter
+    /opt/WolframLanguageForJupyter/configure-jupyter.wls add /usr/local/bin/WolframKernel /opt/conda/bin/jupyter
+
+%apprun jupyter-notebook
+    exec /opt/conda/bin/jupyter notebook --notebook-dir="$PWD" --ip='*' --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' "$@"
+
+%apprun jupyter-lab
+    exec /opt/conda/bin/jupyter lab      --notebook-dir="$PWD" --ip='*' --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' "$@"
