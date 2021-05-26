@@ -11,3 +11,4 @@ From: debian:10
     apt-get -yq install subversion git wget curl
     apt-get -yq install findutils grep sed gawk patch unzip
     apt-get -yq install mc joe screen
+    apt-get -yq clean
