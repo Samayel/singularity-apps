@@ -1,0 +1,19 @@
+Bootstrap: docker
+From: ubuntu:latest
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt -yq update
+    apt -yq install python3 ffmpeg curl
+    apt -yq clean
+
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+
+    curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
+    chmod a+rx /usr/local/bin/youtube-dl
+
+%runscript
+    exec youtube-dl -f 'bestvideo+bestaudio/best' --write-description --write-info-json --write-annotations --write-sub --write-thumbnail "$@"
