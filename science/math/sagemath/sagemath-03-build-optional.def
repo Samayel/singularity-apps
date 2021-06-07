@@ -1,0 +1,12 @@
+Bootstrap: localimage
+From: sagemath-02-build.sif
+
+%files
+    ./build-sage-optional /opt/
+
+%environment
+    export LC_ALL=C
+
+%post
+    /opt/build-sage-optional
+

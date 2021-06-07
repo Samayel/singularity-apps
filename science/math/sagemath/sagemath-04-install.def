@@ -1,0 +1,43 @@
+Bootstrap: localimage
+From: sagemath-03-build-optional.sif
+
+%environment
+    export LC_ALL=C
+
+%post
+    ln -s /opt/sage/sage /usr/local/bin/sage
+    /opt/sage/sage -c "install_scripts('/usr/local/bin')"
+    /opt/sage/sage --testall --long || true
+
+%runscript
+    exec /usr/local/bin/sage "$@"
+
+%apprun sage
+    exec /usr/local/bin/sage "$@"
+
+%apprun R
+    exec /usr/local/bin/R "$@"
+
+%apprun gap
+    exec /usr/local/bin/gap "$@"
+
+%apprun gp
+    exec /usr/local/bin/gp "$@"
+
+%apprun ipython
+    exec /usr/local/bin/ipython "$@"
+
+%apprun maxima
+    exec /usr/local/bin/maxima "$@"
+
+%apprun mwrank
+    exec /usr/local/bin/mwrank "$@"
+
+%apprun singular
+    exec /usr/local/bin/sage --singular "$@"
+
+%apprun jupyter-notebook
+    exec /usr/local/bin/sage -n jupyter    --notebook-dir="$PWD" --ip='*' --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' "$@"
+
+%apprun jupyter-lab
+    exec /usr/local/bin/sage -n jupyterlab --notebook-dir="$PWD" --ip='*' --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' "$@"

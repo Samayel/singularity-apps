@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -e
+
+# export MAKE='make -j4'
+# export SAGE_CHECK=yes
+
+# source "/opt/conda/etc/profile.d/conda.sh"
+# conda activate sage-build
+
+cd /opt/sage
+
+# ./bootstrap
+# ./configure                                   \
+#   --prefix=$CONDA_PREFIX                      \
+
+./configure                                     \
+    --enable-build-as-root                      \
+    --with-system-boost=force                   \
+    --with-system-boost_cropped=force           \
+    --with-system-bzip2=force                   \
+    --with-system-cmake=force                   \
+    --with-system-curl=force                    \
+    --with-system-freetype=force                \
+    --with-system-gc=force                      \
+    --with-system-gfortran=force                \
+    --with-system-git=force                     \
+    --with-system-gmp=force                     \
+    --with-system-graphviz=force                \
+    --with-system-iconv=force                   \
+    --with-system-libatomic_ops=force           \
+    --with-system-libgd=force                   \
+    --with-system-libmpc=force                  \
+    --with-system-libmpfi=force                 \
+    --with-system-libmpfr=force                 \
+    --with-system-libpng=force                  \
+    --with-system-libxml2=force                 \
+    --with-system-ncurses=force                 \
+    --with-system-openssl=force                 \
+    --with-system-pandoc=force                  \
+    --with-system-patch=force                   \
+    --with-system-pcre=force                    \
+    --with-system-pkgconf=force                 \
+    --with-system-python3=force                 \
+    --with-system-readline=force                \
+    --with-system-sqlite=force                  \
+    --with-system-xz=force                      \
+    --with-system-yasm=force                    \
+    --with-system-zeromq=force                  \
+    --with-system-zlib=force
+
+make

@@ -1,0 +1,30 @@
+Bootstrap: localimage
+From: ../../../base/debian10-dev.sif
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -yq update
+    apt-get -yq install binutils bzip2 ca-certificates curl gfortran graphviz libatomic-ops-dev libboost-dev libbz2-dev libcurl4-openssl-dev libffi-dev libfile-slurp-perl libfreetype6-dev libgc-dev libgd-dev libgmp-dev libigraph-dev libjson-perl liblzma-dev libmongodb-perl libmpc-dev libmpfi-dev libmpfr-dev libncurses5-dev libpcre3-dev libperl-dev libpython3-dev libreadline-dev libsqlite3-dev libssl-dev libsvg-perl libterm-readkey-perl libterm-readline-gnu-perl libxml-libxslt-perl libxml-writer-perl libxml2-dev libz-dev libzmq3-dev m4 make openssl pandoc patch perl pkg-config python3 python3-distutils sqlite3 tar xz-utils yasm
+    apt-get -yq install texlive texlive-generic-extra texlive-xetex texlive-full latexmk dvipng default-jdk ffmpeg libavdevice-dev tk tk-dev
+    apt-get -yq install gettext pkg-config
+    apt-get -yq clean
+
+    wget -O Miniforge3.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh
+    bash Miniforge3.sh -b -p /opt/conda
+    rm Miniforge3.sh
+
+    cd /opt
+    wget https://mirrors.mit.edu/sage/src/sage-9.3.tar.gz
+    tar -xzf sage-9.3.tar.gz
+    mv sage-9.3 sage
+    rm sage-9.3.tar.gz
+
+    cd /opt/conda/bin
+    ./conda update     -y conda
+#   ./conda create     -y -n sage-build
+#   ./conda env update    -n sage-build --file /opt/sage/environment.yml
+##  ./conda env update    -n sage-build --file /opt/sage/environment-optional.yml
+    ./conda clean      -y --all
