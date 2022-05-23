@@ -1,0 +1,42 @@
+Bootstrap: docker
+From: ubuntu:20.04
+Stage: builder
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt -yq update
+    apt -yq install libicu-dev libicu66 curl sed
+    apt -yq clean
+
+    curl -sSL https://get.haskellstack.org/ | sh
+
+    mkdir -p /opt
+    cd /opt
+    git clone --recursive https://github.com/vdukhovni/danecheck
+    cd danecheck
+    sed -i -e 's|extra-deps:|extra-deps:\n- tls-1.5.2@sha256:61e403d59c860fe9df2ff15bf2aa73a75fa1fb53f7ac27a62d1f40f23d30f26c,6753|' stack.yaml
+    stack install
+    cp /root/.local/bin/danecheck /usr/local/bin
+
+
+Bootstrap: docker
+From: ubuntu:20.04
+Stage: final
+
+%environment
+    export LC_ALL=C
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt -yq update
+    apt -yq install libicu-dev libicu66
+    apt -yq clean
+
+%files from builder
+    /usr/local/bin/danecheck /usr/local/bin
+
+%runscript
+    exec /usr/local/bin/danecheck "$@"
