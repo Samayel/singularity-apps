@@ -2,7 +2,7 @@
 
 set -e
 
-VERSION=3.8.0
+VERSION=3.10.0
 ARCH=amd64
 
 sudo /opt/singularity/bin/singularity run --allow-setuid --writable-tmpfs singularity/singularity-bootstrap.sif ${VERSION} ${ARCH}

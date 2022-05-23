@@ -6,4 +6,5 @@ VERSION=$1
 ARCH=$2
 
 mkdir -p /opt
+rm -rf /opt/singularity
 curl -fsSL https://fs.quyo.net/singularity/singularity-${VERSION}-${ARCH}.tar.xz | tar -C /opt -xJ
